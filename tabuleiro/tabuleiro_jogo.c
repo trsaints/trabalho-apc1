@@ -2,10 +2,9 @@
 #include <stdlib.h>
 
 int main() {
-  char tabuleiro[8][8]; // se tão na mesma linha os is são iguais, se tão na
-                        // mesma coluna os jotas são iguais
-  int i, j;             // posição da peça no tabuleiro
-  int h, k;             // para onde a peça quer ir
+  char tabuleiro[8][8]; // se tão na mesma linha os is são iguais, se tão na mesma coluna os jotas são iguais
+  int i, j;// posição da peça no tabuleiro
+  int h, k;// para onde a peça quer ir
   for (i = 0; i < 8; i++) {
     for (j = 0; j < 8; j++) {
       if ((i + j) % 2 == 0) {
@@ -30,6 +29,7 @@ int main() {
   int pecas_X = 12;
   int pecas_O = 12;
   while (ganhou == 0) {
+    
     while (vez == 2) {
       if (reprint == 1) {
         deu_certo = system("clear");
@@ -41,8 +41,10 @@ int main() {
         }
         printf(" 1 2 3 4 5 6 7 8\n");
         reprint = 0;
+        vez = proxima_vez;
       }
     }
+    
     while (vez == 1) {
       if (pecas_X == 0 || pecas_O == 0) {
         vez = 2;
@@ -78,8 +80,7 @@ int main() {
         deu_certo = scanf("%i %i", &h, &k);
         h = h - 1;
         k = k - 1;
-        while (getchar() != '\n')
-          ;
+        while (getchar() != '\n');
         if (h == i - 1) {
           if (k == j + 1 || k == j - 1) {
             if (tabuleiro[h][k] == ' ') {
@@ -118,11 +119,16 @@ int main() {
           j = 0;
           h = 0;
           k = 0;
+          reprint = 1;
+          vez = 2;
+          proxima_vez = 1;
         }
       }
     }
     while (vez == 0) {
       printf("Teste deu certo");
+      getchar();
+      while (getchar() != '\n');
       vez = 3;
     }
   }
