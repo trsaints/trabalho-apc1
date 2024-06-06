@@ -55,8 +55,9 @@ int main()
 
         printf(" 1 2 3 4 5 6 7 8\n");
         novo_jogo.reprint = 0;
-        novo_jogo.vez = novo_jogo.proxima_vez;
       }
+
+      novo_jogo.vez = novo_jogo.proxima_vez;
     }
 
     while (novo_jogo.vez == 1)
@@ -70,8 +71,8 @@ int main()
 
       printf("X, escolha a peça que deseja mover (linha coluna): ");
 
-      entrada_correta = scanf("%d %d", &i, &j);
-      i = i - 1;
+      entrada_correta = scanf("%d %d", &i, &j),
+      i = i - 1,
       j = j - 1;
 
       while (getchar() != '\n')
@@ -100,8 +101,9 @@ int main()
       {
         printf("X, escolha a posição para onde deseja mover a peça (linha "
                "coluna): ");
-        entrada_correta = scanf("%i %i", &h, &k);
-        h = h - 1;
+
+        entrada_correta = scanf("%i %i", &h, &k),
+        h = h - 1,
         k = k - 1;
 
         while (getchar() != '\n')
@@ -165,11 +167,14 @@ int main()
     while (novo_jogo.vez == 0)
     {
       printf("Teste deu certo");
+
       getchar();
       while (getchar() != '\n')
         ;
+
       novo_jogo.vez = 3;
     }
   }
+
   return 0;
 }
