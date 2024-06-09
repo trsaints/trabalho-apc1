@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define VERSAO "0.1.0"
+
 struct jogo
 {
   int _REPRINT,
@@ -12,10 +14,65 @@ struct jogo
       pecas_O;
 };
 
+enum opcoes_do_jogo
+{
+  jogar = 1,
+  sobre = 2,
+  sair = 3
+};
+
 int main()
 {
-  char tabuleiro[8][8];
   int entrada_correta = 0;
+  char opcoes_menu[][20] = {"Jogar", "Sobre", "Sair"};
+
+  printf("Bem-vindo ao jogo de damas!\n");
+  printf("Escolha uma opção abaixo.\n");
+
+  for (int i = 0; i < 3; i++)
+    printf("%d. %s\n", (i + 1), opcoes_menu[i]);
+
+  printf("Sua opção: ");
+
+  enum opcoes_do_jogo opcoes;
+  int opcao_escolhida;
+
+  entrada_correta = scanf("%d", &opcao_escolhida);
+  opcoes = (enum opcoes_do_jogo)opcao_escolhida;
+
+  switch (opcoes)
+  {
+  case jogar:
+    printf("Jogar\n");
+    system("clear");
+
+    break;
+
+  case sobre:
+    system("clear");
+
+    printf("Sobre: \n");
+    printf("Versão: %s\n", VERSAO);
+    printf("Feito por @trsaints e @Reizerva (https://github.com/trsaints/trabalho-apc1)\n");
+
+    return 0;
+
+  case sair:
+    printf("Saindo...\n");
+
+    return 0;
+
+  default:
+    printf("Opção inválida. Encerrando...\n");
+
+    return 1;
+  }
+
+  while (getchar() != '\n')
+    ;
+
+  struct jogo novo_jogo = {1, 2, 1, 0, 0, 12, 12};
+  char tabuleiro[8][8];
   int linha_origem, coluna_origem,
       linha_destino, coluna_destino;
 
@@ -34,8 +91,6 @@ int main()
           tabuleiro[linha_origem][coluna_origem] = ' ';
       }
     }
-
-  struct jogo novo_jogo = {1, 2, 1, 0, 0, 12, 12};
 
   while (novo_jogo.partida_acabou == 0)
   {
