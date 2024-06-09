@@ -4,7 +4,7 @@
 struct jogo
 {
   int _REPRINT,
-      estado, // 0 é Jogador 0, 1 é Jogador X, 2 é novo_jogo.reprint
+      estado,
       _ACAO_ATUAL,
       partida_acabou,
       pode_mover,
@@ -14,11 +14,10 @@ struct jogo
 
 int main()
 {
-  int entrada_correta = 0;
   char tabuleiro[8][8];
-  // se tão na mesma linha os is são iguais, se tão na mesma coluna os jotas são iguais
-  int linha_origem, coluna_origem;   // posição da peça no tabuleiro
-  int linha_destino, coluna_destino; // para onde a peça quer ir
+  int entrada_correta = 0;
+  int linha_origem, coluna_origem,
+      linha_destino, coluna_destino;
 
   for (linha_origem = 0; linha_origem < 8; linha_origem++)
     for (coluna_origem = 0; coluna_origem < 8; coluna_origem++)
@@ -96,16 +95,13 @@ int main()
       else
       {
         int tem_diagonal_livre = tabuleiro[linha_origem - 1][coluna_origem + 1] == ' ' || tabuleiro[linha_origem - 1][coluna_origem - 1] == ' ';
+
         int peca_colidiu_a_esquerda = tabuleiro[linha_origem - 1][coluna_origem + 1] == 'O' && tabuleiro[linha_origem - 2][coluna_origem + 2] == ' ';
         int peca_colidiu_a_direita = tabuleiro[linha_origem - 1][coluna_origem - 1] == 'O' && tabuleiro[linha_origem - 2][coluna_origem - 2] == ' ';
 
-        if (tem_diagonal_livre)
-          novo_jogo.pode_mover = 1;
+        int peca_colidiu = peca_colidiu_a_esquerda || peca_colidiu_a_direita;
 
-        if (peca_colidiu_a_esquerda)
-          novo_jogo.pode_mover = 1;
-
-        if (peca_colidiu_a_direita)
+        if (tem_diagonal_livre || peca_colidiu)
           novo_jogo.pode_mover = 1;
       }
 
@@ -137,7 +133,7 @@ int main()
               novo_jogo._ACAO_ATUAL = 0;
               novo_jogo.estado = 2;
             }
-            else if (peca_colide_em_diagonal) // tabuleiro[h][k] != 'X'
+            else if (peca_colide_em_diagonal)
             {
               if (coluna_destino < coluna_origem)
               {
@@ -166,21 +162,25 @@ int main()
             }
           }
         }
+
         if (novo_jogo.estado == 1)
         {
           printf("Nenhum movimento possível para a peça escolhida. Precione "
                  "ENTER para escolher novamente\n");
           getchar();
-          linha_origem = 0;
-          coluna_origem = 0;
-          linha_destino = 0;
+
+          linha_origem = 0,
+          coluna_origem = 0,
+          linha_destino = 0,
           coluna_destino = 0;
-          novo_jogo._REPRINT = 1;
-          novo_jogo.estado = 2;
+
+          novo_jogo._REPRINT = 1,
+          novo_jogo.estado = 2,
           novo_jogo._ACAO_ATUAL = 1;
         }
       }
     }
+
     while (novo_jogo.estado == 0)
     {
       printf("Teste deu certo");
