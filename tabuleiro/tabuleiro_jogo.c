@@ -49,6 +49,7 @@ int main()
 
   char simbolo_turno = 'X';
   char simbolo_oponente = 'O';
+  int sentido = 1;
 
   // char tmp = simbolo_oponente;
   // simbolo_oponente = simbolo_turno;
@@ -69,7 +70,7 @@ int main()
       ._REPRINT = TRUE,
       .estado = ESTADO_REPRINT,
       ._ACAO_ATUAL = 1,
-      .partida_acabou = 0,
+      .partida_acabou = FALSE,
       .pode_mover = FALSE,
       .pecas_X = 12,
       .pecas_O = 12};
@@ -113,7 +114,7 @@ int main()
         printf("%c, escolha a peça que deseja mover (linha coluna): ", simbolo_turno);
         fgets(buffer_linha, sizeof(buffer_linha), stdin);
         entrada_correta = sscanf(buffer_linha, "%d %d", &origem.lin, &origem.col);
-      } while (entrada_correta < 2);
+      } while (entrada_correta < 2); //o do while repete 3 vezes de vez em quando, longe de mim saber por que.
 
       origem.lin--;
       origem.col--;
@@ -136,14 +137,16 @@ int main()
 
         switch (simbolo_turno)
         {
-        case 'O': // tabuleiro[origem.lin + (1*var)] var = 1 em X, var = -1 em O
+        case 'X':
+          sentido = -1;
           tem_diagonal_livre = (tabuleiro[origem.lin - 1][origem.col + 1] == ' ') || (tabuleiro[origem.lin - 1][origem.col - 1] == ' ');
           peca_colidiu_a_esquerda = (tabuleiro[origem.lin - 1][origem.col + 1] == simbolo_oponente) && (tabuleiro[origem.lin - 2][origem.col + 2] == ' ');
           peca_colidiu_a_direita = (tabuleiro[origem.lin - 1][origem.col - 1] == simbolo_oponente) && (tabuleiro[origem.lin - 2][origem.col - 2] == ' ');
 
           break;
 
-        case 'X':
+        case 'O':
+          sentido = 1;
           tem_diagonal_livre = (tabuleiro[origem.lin + 1][origem.col + 1] == ' ') || (tabuleiro[origem.lin + 1][origem.col - 1] == ' ');
           peca_colidiu_a_esquerda = (tabuleiro[origem.lin + 1][origem.col + 1] == simbolo_oponente) && (tabuleiro[origem.lin + 2][origem.col + 2] == ' ');
           peca_colidiu_a_direita = (tabuleiro[origem.lin + 1][origem.col - 1] == simbolo_oponente) && (tabuleiro[origem.lin + 2][origem.col - 2] == ' ');
@@ -158,8 +161,7 @@ int main()
 
       do
       {
-        printf("%c, escolha a posição para onde deseja mover a peça (linha "
-               "coluna): ",
+        printf("%c, escolha a posição para onde deseja mover a peça (linha coluna): ",
                simbolo_turno);
         fgets(buffer_linha, sizeof(buffer_linha), stdin);
         entrada_correta = sscanf(buffer_linha, "%i %i", &destino.lin, &destino.col);
@@ -168,7 +170,7 @@ int main()
       destino.lin--;
       destino.col--;
 
-      int movimento_valido = (destino.lin == (origem.lin - 1));
+      int movimento_valido = (destino.lin == (origem.lin + (sentido)));
 
       if (movimento_valido)
       {
