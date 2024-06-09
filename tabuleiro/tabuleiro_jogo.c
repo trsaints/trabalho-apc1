@@ -106,7 +106,7 @@ int main()
       {
         partida.estado = ESTADO_REPRINT;
         partida._REPRINT = TRUE;
-        partida._ACAO_ATUAL = 3;
+        partida._ACAO_ATUAL = 3; // essa linha não para o jogo
       }
 
       do
@@ -221,8 +221,8 @@ int main()
                 tabuleiro[origem.lin][origem.col] = ' ';
                 tabuleiro[origem.lin + 2][origem.col + 2 * direcao] = simbolo_turno;
                 partida.pecas_X = partida.pecas_X - 1;
-                partida._ACAO_ATUAL = 1;
-                partida.estado = 2; // depois disso, o codigo continua? ou ele passa pro outro while?
+                partida._ACAO_ATUAL = 0;
+                partida.estado = 2;
               }
 
               break;
