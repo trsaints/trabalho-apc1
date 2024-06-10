@@ -165,55 +165,53 @@ int main()
 
             if (movimento_valido)
             {
-                int pode_ir_para_diagonal = (destino.col == origem.col + 1) || (destino.col == origem.col - 1);
+                int pode_ir_para_diagonal = (destino.col == origem.col + 1) || (destino.col == origem.col - 1),
+                    peca_colide = (tabuleiro[destino.lin][destino.col] == simbolo_oponente),
+                    peca_nao_colide = !peca_colide;
 
-                if (pode_ir_para_diagonal)
+                if (pode_ir_para_diagonal && peca_nao_colide)
                 {
-                    int peca_colide_em_diagonal = (tabuleiro[destino.lin][destino.col] == simbolo_oponente);
 
-                    if (tabuleiro[destino.lin][destino.col] == ' ')
+                    tabuleiro[destino.lin][destino.col] = simbolo_turno;
+                    tabuleiro[origem.lin][origem.col] = ' ';
+                    partida._ACAO_ATUAL = 0;
+                    partida.estado = 2;
+                }
+                else if (pode_ir_para_diagonal && peca_colide)
+                {
+                    int direcao = (destino.col < origem.col)   ? -1
+                                  : (destino.col > origem.col) ? 1
+                                                               /* else */
+                                                               : 0;
+                    int pode_capturar = FALSE;
+                    int sentido_captura = 0;
+
+                    if (simbolo_turno == 'X')
+                        sentido_captura = origem.lin - 2;
+                    else if (simbolo_turno == 'O')
+                        sentido_captura = origem.lin + 2;
+
+                    pode_capturar = (direcao != 0) && (tabuleiro[sentido_captura][origem.col + 2 * direcao] == ' ');
+
+                    if (pode_capturar)
                     {
-                        tabuleiro[destino.lin][destino.col] = simbolo_turno;
+                        tabuleiro[destino.lin][destino.col] = ' ';
                         tabuleiro[origem.lin][origem.col] = ' ';
+                        tabuleiro[sentido_captura][origem.col + 2 * direcao] = simbolo_turno;
+
                         partida._ACAO_ATUAL = 0;
                         partida.estado = 2;
                     }
-                    else if (peca_colide_em_diagonal)
-                    {
-                        int direcao = (destino.col < origem.col)   ? -1
-                                      : (destino.col > origem.col) ? 1
-                                                                   /* else */
-                                                                   : 0;
-                        int pode_capturar = FALSE;
-                        int sentido_captura = 0;
 
-                        if (simbolo_turno == 'X')
-                            sentido_captura = origem.lin - 2;
-                        else if (simbolo_turno == 'O')
-                            sentido_captura = origem.lin + 2;
+                    if (pode_capturar && (simbolo_turno == 'X'))
+                        partida.pecas_O--;
+                    else if (pode_capturar && (simbolo_turno == 'O'))
+                        partida.pecas_X--;
 
-                        pode_capturar = (direcao != 0) && (tabuleiro[sentido_captura][origem.col + 2 * direcao] == ' ');
+                    pecas_esgotaram = (partida.pecas_X == 0) || (partida.pecas_O == 0);
 
-                        if (pode_capturar)
-                        {
-                            tabuleiro[destino.lin][destino.col] = ' ';
-                            tabuleiro[origem.lin][origem.col] = ' ';
-                            tabuleiro[sentido_captura][origem.col + 2 * direcao] = simbolo_turno;
-
-                            partida._ACAO_ATUAL = 0;
-                            partida.estado = 2;
-                        }
-
-                        if (pode_capturar && (simbolo_turno == 'X'))
-                            partida.pecas_O--;
-                        else if (pode_capturar && (simbolo_turno == 'O'))
-                            partida.pecas_X--;
-
-                        pecas_esgotaram = (partida.pecas_X == 0) || (partida.pecas_O == 0);
-
-                        if (pecas_esgotaram)
-                            partida.acabou = TRUE;
-                    }
+                    if (pecas_esgotaram)
+                        partida.acabou = TRUE;
                 }
             }
 
