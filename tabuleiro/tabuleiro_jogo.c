@@ -30,6 +30,8 @@ struct jogo
         acabou,
         pecas_X,
         pecas_O;
+
+    int sentido;
 };
 
 int main()
@@ -37,17 +39,26 @@ int main()
 #ifdef _WIN32
     SetConsoleOutputCP(CP_UTF8); // Resolve problema de acentuação no windows
 #endif
-    char buffer_linha[256];
+
+    struct jogo partida = {
+        ._REPRINT = TRUE,
+        .estado = ESTADO_REPRINT,
+        ._ACAO_ATUAL = 1,
+        .acabou = FALSE,
+        .pecas_X = 11,
+        .pecas_O = 11,
+        .sentido = 0};
+
+    char buffer_linha[256],
+        tabuleiro[8][8];
 
     int entrada_correta = 0;
-    char tabuleiro[8][8];
 
-    struct Posicao origem;  // posição da peça no tabuleiro
-    struct Posicao destino; // para onde a peça quer ir
+    struct Posicao origem,
+        destino;
 
-    char simbolo_turno = 'X';
-    char simbolo_oponente = 'O';
-    int sentido = 1;
+    char simbolo_turno = 'X',
+         simbolo_oponente = 'O';
 
     for (int linha = 0; linha < 8; linha++)
         for (int coluna = 0; coluna < 8; coluna++)
@@ -59,14 +70,6 @@ int main()
                                                    /* else */
                                                    : ' ';
         }
-
-    struct jogo partida = {
-        ._REPRINT = TRUE,
-        .estado = ESTADO_REPRINT,
-        ._ACAO_ATUAL = 1,
-        .acabou = FALSE,
-        .pecas_X = 11,
-        .pecas_O = 1};
 
     while (partida.acabou == FALSE)
     {
@@ -94,8 +97,7 @@ int main()
         while (partida.estado == TURNO)
         {
             int pecas_esgotaram = 0;
-
-            //;
+            partida.sentido = (simbolo_turno == 'X') ? -1 : 1;
 
             do
             {
@@ -117,31 +119,6 @@ int main()
                 origem = (struct Posicao){0, 0};
                 destino = (struct Posicao){0, 0};
             }
-            else
-            {
-                int tem_diagonal_livre = FALSE,
-                    peca_colidiu_a_esquerda = FALSE,
-                    peca_colidiu_a_direita = FALSE;
-
-                switch (simbolo_turno)
-                {
-                case 'X':
-                    sentido = -1;
-                    tem_diagonal_livre = (tabuleiro[origem.lin - 1][origem.col + 1] == ' ') || (tabuleiro[origem.lin - 1][origem.col - 1] == ' ');
-                    peca_colidiu_a_esquerda = (tabuleiro[origem.lin - 1][origem.col + 1] == simbolo_oponente) && (tabuleiro[origem.lin - 2][origem.col + 2] == ' ');
-                    peca_colidiu_a_direita = (tabuleiro[origem.lin - 1][origem.col - 1] == simbolo_oponente) && (tabuleiro[origem.lin - 2][origem.col - 2] == ' ');
-
-                    break;
-
-                case 'O':
-                    sentido = 1;
-                    tem_diagonal_livre = (tabuleiro[origem.lin + 1][origem.col + 1] == ' ') || (tabuleiro[origem.lin + 1][origem.col - 1] == ' ');
-                    peca_colidiu_a_esquerda = (tabuleiro[origem.lin + 1][origem.col + 1] == simbolo_oponente) && (tabuleiro[origem.lin + 2][origem.col + 2] == ' ');
-                    peca_colidiu_a_direita = (tabuleiro[origem.lin + 1][origem.col - 1] == simbolo_oponente) && (tabuleiro[origem.lin + 2][origem.col - 2] == ' ');
-
-                    break;
-                }
-            }
 
             do
             {
@@ -154,7 +131,7 @@ int main()
             destino.lin--;
             destino.col--;
 
-            int movimento_valido = (partida.estado == TURNO) && (destino.lin == (origem.lin + (sentido)));
+            int movimento_valido = (partida.estado == TURNO) && (destino.lin == (origem.lin + (partida.sentido)));
 
             if (movimento_valido)
             {
@@ -172,19 +149,15 @@ int main()
                 }
                 else if (pode_ir_para_diagonal && peca_colide)
                 {
-                    int direcao = (destino.col < origem.col)   ? -1
-                                  : (destino.col > origem.col) ? 1
-                                                               /* else */
-                                                               : 0;
                     int sentido_captura = (simbolo_turno == 'X') ? origem.lin - 2 : origem.lin + 2;
 
-                    int pode_capturar = (direcao != 0) && (tabuleiro[sentido_captura][origem.col + 2 * direcao] == ' ');
+                    int pode_capturar = (partida.sentido != 0) && (tabuleiro[sentido_captura][origem.col + 2 * partida.sentido] == ' ');
 
                     if (pode_capturar)
                     {
                         tabuleiro[destino.lin][destino.col] = ' ';
                         tabuleiro[origem.lin][origem.col] = ' ';
-                        tabuleiro[sentido_captura][origem.col + 2 * direcao] = simbolo_turno;
+                        tabuleiro[sentido_captura][origem.col + 2 * partida.sentido] = simbolo_turno;
 
                         partida._ACAO_ATUAL = 0;
                         partida.estado = 2;
@@ -201,7 +174,6 @@ int main()
                         partida.acabou = TRUE;
                 }
             }
-
             else
             {
                 printf("Nenhum movimento possível para a peça escolhida. Pressione "
