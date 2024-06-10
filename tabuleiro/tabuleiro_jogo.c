@@ -24,10 +24,10 @@ struct Posicao
 
 struct jogo
 {
-  int _REPRINT,
+  unsigned int _REPRINT,
       estado, // 0 é Jogador 0, 1 é Jogador X, 2 é novo_jogo.reprint
       _ACAO_ATUAL,
-      partida_acabou,
+      acabou,
       pode_mover,
       pecas_X,
       pecas_O;
@@ -42,7 +42,6 @@ int main()
 
   int entrada_correta = 0;
   char tabuleiro[8][8];
-  // se tão na mesma linha os is são iguais, se tão na mesma coluna os jotas são iguais
 
   struct Posicao origem;  // posição da peça no tabuleiro
   struct Posicao destino; // para onde a peça quer ir
@@ -50,10 +49,6 @@ int main()
   char simbolo_turno = 'X';
   char simbolo_oponente = 'O';
   int sentido = 1;
-
-  // char tmp = simbolo_oponente;
-  // simbolo_oponente = simbolo_turno;
-  // simbolo_turno = tmp;
 
   for (int linha = 0; linha < 8; linha++)
     for (int coluna = 0; coluna < 8; coluna++)
@@ -70,12 +65,12 @@ int main()
       ._REPRINT = TRUE,
       .estado = ESTADO_REPRINT,
       ._ACAO_ATUAL = 1,
-      .partida_acabou = FALSE,
+      .acabou = FALSE,
       .pode_mover = FALSE,
-      .pecas_X = 12,
-      .pecas_O = 12};
+      .pecas_X = 11,
+      .pecas_O = 11};
 
-  while (partida.partida_acabou == FALSE)
+  while (partida.acabou == FALSE)
   {
     while (partida.estado == ESTADO_REPRINT)
     {
@@ -100,21 +95,16 @@ int main()
 
     while (partida.estado == TURNO)
     {
-      int pecas_esgotaram = (partida.pecas_X == 0) || (partida.pecas_O == 0);
+      int pecas_esgotaram = 0;
 
-      if (pecas_esgotaram)
-      {
-        partida.estado = ESTADO_REPRINT;
-        partida._REPRINT = TRUE;
-        partida._ACAO_ATUAL = 3; // essa linha não para o jogo
-      }
+      //;
 
       do
       {
         printf("%c, escolha a peça que deseja mover (linha coluna): ", simbolo_turno);
         fgets(buffer_linha, sizeof(buffer_linha), stdin);
         entrada_correta = sscanf(buffer_linha, "%d %d", &origem.lin, &origem.col);
-      } while (entrada_correta < 2); //o do while repete 3 vezes de vez em quando, longe de mim saber por que.
+      } while (entrada_correta < 2); // o do while repete 3 vezes de vez em quando, longe de mim saber por que.
 
       origem.lin--;
       origem.col--;
@@ -156,6 +146,7 @@ int main()
 
         partida.pode_mover = tem_diagonal_livre || peca_colidiu_a_esquerda || peca_colidiu_a_direita;
       }
+
       if (partida.pode_mover == FALSE)
         continue;
 
@@ -205,7 +196,8 @@ int main()
                 tabuleiro[destino.lin][destino.col] = ' ';
                 tabuleiro[origem.lin][origem.col] = ' ';
                 tabuleiro[origem.lin - 2][origem.col + 2 * direcao] = simbolo_turno;
-                partida.pecas_O = partida.pecas_O - 1;
+
+                partida.pecas_O--;
                 partida._ACAO_ATUAL = 0;
                 partida.estado = 2;
               }
@@ -220,13 +212,19 @@ int main()
                 tabuleiro[destino.lin][destino.col] = ' ';
                 tabuleiro[origem.lin][origem.col] = ' ';
                 tabuleiro[origem.lin + 2][origem.col + 2 * direcao] = simbolo_turno;
-                partida.pecas_X = partida.pecas_X - 1;
+
+                partida.pecas_X--;
                 partida._ACAO_ATUAL = 0;
                 partida.estado = 2;
               }
 
               break;
             }
+
+            pecas_esgotaram = (partida.pecas_X == 0) || (partida.pecas_O == 0);
+
+            if (pecas_esgotaram)
+              partida.acabou = TRUE;
           }
         }
       }
@@ -258,6 +256,8 @@ int main()
       partida._ACAO_ATUAL = 1;
     }
   }
+
+  printf("Fim de jogo\n");
 
   return 0;
 }
