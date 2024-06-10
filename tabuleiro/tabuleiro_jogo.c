@@ -28,7 +28,6 @@ struct jogo
         estado, // 0 é Jogador 0, 1 é Jogador X, 2 é novo_jogo.reprint
         _ACAO_ATUAL,
         acabou,
-        pode_mover,
         pecas_X,
         pecas_O;
 };
@@ -66,7 +65,6 @@ int main()
         .estado = ESTADO_REPRINT,
         ._ACAO_ATUAL = 1,
         .acabou = FALSE,
-        .pode_mover = FALSE,
         .pecas_X = 11,
         .pecas_O = 1};
 
@@ -143,12 +141,7 @@ int main()
 
                     break;
                 }
-
-                partida.pode_mover = tem_diagonal_livre || peca_colidiu_a_esquerda || peca_colidiu_a_direita;
             }
-
-            if (partida.pode_mover == FALSE)
-                continue;
 
             do
             {
@@ -161,7 +154,7 @@ int main()
             destino.lin--;
             destino.col--;
 
-            int movimento_valido = (destino.lin == (origem.lin + (sentido)));
+            int movimento_valido = (partida.estado == TURNO) && (destino.lin == (origem.lin + (sentido)));
 
             if (movimento_valido)
             {
@@ -183,15 +176,9 @@ int main()
                                   : (destino.col > origem.col) ? 1
                                                                /* else */
                                                                : 0;
-                    int pode_capturar = FALSE;
-                    int sentido_captura = 0;
+                    int sentido_captura = (simbolo_turno == 'X') ? origem.lin - 2 : origem.lin + 2;
 
-                    if (simbolo_turno == 'X')
-                        sentido_captura = origem.lin - 2;
-                    else if (simbolo_turno == 'O')
-                        sentido_captura = origem.lin + 2;
-
-                    pode_capturar = (direcao != 0) && (tabuleiro[sentido_captura][origem.col + 2 * direcao] == ' ');
+                    int pode_capturar = (direcao != 0) && (tabuleiro[sentido_captura][origem.col + 2 * direcao] == ' ');
 
                     if (pode_capturar)
                     {
@@ -215,16 +202,17 @@ int main()
                 }
             }
 
-            if (partida.estado == TURNO)
+            else
             {
                 printf("Nenhum movimento possível para a peça escolhida. Pressione "
                        "ENTER para escolher novamente\n");
                 getchar();
                 origem = (struct Posicao){0, 0};
                 destino = (struct Posicao){0, 0};
+
                 partida._REPRINT = TRUE;
                 partida.estado = ESTADO_REPRINT;
-                partida._ACAO_ATUAL = 1;
+                partida._ACAO_ATUAL = TURNO;
 
                 continue;
             }
@@ -238,7 +226,7 @@ int main()
         {
             partida._REPRINT = TRUE;
             partida.estado = ESTADO_REPRINT;
-            partida._ACAO_ATUAL = 1;
+            partida._ACAO_ATUAL = TURNO;
         }
     }
 
