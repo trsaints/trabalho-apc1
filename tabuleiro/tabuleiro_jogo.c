@@ -7,13 +7,11 @@
 #define FALSE 0
 #define TRUE 1
 
-#define ARRAY_SIZE(X) (sizeof(X) / sizeof(*X))
-
 enum EstadoJogo
 {
-    ESTADO_JOGADOR,
+    JOGADOR,
     TURNO,
-    ESTADO_REPRINT
+    REPRINT
 };
 
 struct Posicao
@@ -25,7 +23,7 @@ struct Posicao
 struct jogo
 {
     unsigned int _REPRINT,
-        estado, // 0 é Jogador 0, 1 é Jogador X, 2 é novo_jogo.reprint
+        estado,
         _ACAO_ATUAL,
         acabou,
         pecas_X,
@@ -42,11 +40,11 @@ int main()
 
     struct jogo partida = {
         ._REPRINT = TRUE,
-        .estado = ESTADO_REPRINT,
+        .estado = REPRINT,
         ._ACAO_ATUAL = 1,
         .acabou = FALSE,
         .pecas_X = 11,
-        .pecas_O = 11,
+        .pecas_O = 1,
         .sentido = 0};
 
     char buffer_linha[256],
@@ -73,7 +71,7 @@ int main()
 
     while (partida.acabou == FALSE)
     {
-        while (partida.estado == ESTADO_REPRINT)
+        while (partida.estado == REPRINT)
         {
             if (partida._REPRINT)
             {
@@ -104,7 +102,7 @@ int main()
                 printf("%c, escolha a peça que deseja mover (linha coluna): ", simbolo_turno);
                 fgets(buffer_linha, sizeof(buffer_linha), stdin);
                 entrada_correta = sscanf(buffer_linha, "%d %d", &origem.lin, &origem.col);
-            } while (entrada_correta < 2); // o do while repete 3 vezes de vez em quando, longe de mim saber por que.
+            } while (entrada_correta < 2);
 
             origem.lin--;
             origem.col--;
@@ -131,7 +129,7 @@ int main()
             destino.lin--;
             destino.col--;
 
-            int movimento_valido = (partida.estado == TURNO) && (destino.lin == (origem.lin + (partida.sentido)));
+            int movimento_valido = destino.lin == (origem.lin + (partida.sentido));
 
             if (movimento_valido)
             {
@@ -183,7 +181,7 @@ int main()
                 destino = (struct Posicao){0, 0};
 
                 partida._REPRINT = TRUE;
-                partida.estado = ESTADO_REPRINT;
+                partida.estado = REPRINT;
                 partida._ACAO_ATUAL = TURNO;
 
                 continue;
@@ -194,10 +192,10 @@ int main()
             simbolo_turno = tmp;
         }
 
-        while (partida.estado == ESTADO_JOGADOR)
+        while (partida.estado == JOGADOR)
         {
             partida._REPRINT = TRUE;
-            partida.estado = ESTADO_REPRINT;
+            partida.estado = REPRINT;
             partida._ACAO_ATUAL = TURNO;
         }
     }
