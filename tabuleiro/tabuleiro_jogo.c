@@ -134,11 +134,8 @@ int main()
                 peca_colide = pode_ir_para_diagonal && (tabuleiro[destino.lin][destino.col] == simbolo_oponente),
                 peca_nao_colide = pode_ir_para_diagonal && (tabuleiro[destino.lin][destino.col] == ' ');
 
-            if (peca_colide || peca_nao_colide)
-            {
-                partida._ACAO_ATUAL = JOGADOR;
-                partida.estado = REPRINT;
-            }
+            partida._ACAO_ATUAL = (peca_colide || peca_nao_colide) ? JOGADOR : TURNO;
+            partida.estado = REPRINT;
 
             if (peca_nao_colide)
             {
@@ -165,8 +162,7 @@ int main()
 
                 pecas_esgotaram = (partida.pecas_X == 0) || (partida.pecas_O == 0);
 
-                if (pecas_esgotaram)
-                    partida.acabou = TRUE;
+                partida.acabou = pecas_esgotaram ? TRUE : FALSE;
             }
             else
             {
@@ -177,7 +173,6 @@ int main()
                 destino = (struct Posicao){0, 0};
 
                 partida._REPRINT = TRUE;
-                partida.estado = REPRINT;
                 partida._ACAO_ATUAL = TURNO;
 
                 continue;
