@@ -90,6 +90,7 @@ int main()
             }
 
             partida.estado = partida._ACAO_ATUAL;
+            partida._REPRINT = TRUE;
         }
 
         while (partida.estado == TURNO)
@@ -116,6 +117,8 @@ int main()
                     ;
                 origem = (struct Posicao){0, 0};
                 destino = (struct Posicao){0, 0};
+                partida.estado = REPRINT;
+                continue;
             }
 
             do
@@ -178,13 +181,14 @@ int main()
                 continue;
             }
 
-            char tmp = simbolo_oponente;
-            simbolo_oponente = simbolo_turno;
-            simbolo_turno = tmp;
         }
 
         while (partida.estado == JOGADOR)
         {
+            char tmp = simbolo_oponente;
+            simbolo_oponente = simbolo_turno;
+            simbolo_turno = tmp;
+            
             partida._REPRINT = TRUE;
             partida.estado = REPRINT;
             partida._ACAO_ATUAL = TURNO;
