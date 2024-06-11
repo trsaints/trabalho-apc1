@@ -129,48 +129,44 @@ int main()
             destino.lin--;
             destino.col--;
 
-            int movimento_valido = destino.lin == (origem.lin + (partida.sentido));
+            int movimento_valido = destino.lin == (origem.lin + (partida.sentido)),
+                pode_ir_para_diagonal = movimento_valido && (destino.col == origem.col + 1) || (destino.col == origem.col - 1),
+                peca_colide = pode_ir_para_diagonal && (tabuleiro[destino.lin][destino.col] == simbolo_oponente),
+                peca_nao_colide = pode_ir_para_diagonal && (tabuleiro[destino.lin][destino.col] == ' ');
 
-            if (movimento_valido)
+            if (peca_colide || peca_nao_colide)
             {
-                int pode_ir_para_diagonal = (destino.col == origem.col + 1) || (destino.col == origem.col - 1),
-                    peca_colide = (tabuleiro[destino.lin][destino.col] == simbolo_oponente),
-                    peca_nao_colide = !peca_colide;
+                partida._ACAO_ATUAL = JOGADOR;
+                partida.estado = REPRINT;
+            }
 
-                if (pode_ir_para_diagonal && peca_nao_colide)
+            if (peca_nao_colide)
+            {
+                tabuleiro[destino.lin][destino.col] = simbolo_turno;
+                tabuleiro[origem.lin][origem.col] = ' ';
+            }
+            else if (peca_colide)
+            {
+                int sentido_captura = (simbolo_turno == 'X') ? (origem.lin - 2) : (origem.lin + 2);
+
+                int pode_capturar = (partida.sentido != 0) && (tabuleiro[sentido_captura][origem.col + 2 * partida.sentido] == ' ');
+
+                if (pode_capturar)
                 {
-
-                    tabuleiro[destino.lin][destino.col] = simbolo_turno;
+                    tabuleiro[destino.lin][destino.col] = ' ';
                     tabuleiro[origem.lin][origem.col] = ' ';
-                    partida._ACAO_ATUAL = 0;
-                    partida.estado = 2;
+                    tabuleiro[sentido_captura][origem.col + 2 * partida.sentido] = simbolo_turno;
                 }
-                else if (pode_ir_para_diagonal && peca_colide)
-                {
-                    int sentido_captura = (simbolo_turno == 'X') ? origem.lin - 2 : origem.lin + 2;
 
-                    int pode_capturar = (partida.sentido != 0) && (tabuleiro[sentido_captura][origem.col + 2 * partida.sentido] == ' ');
+                if (pode_capturar && (simbolo_turno == 'X'))
+                    partida.pecas_O--;
+                else if (pode_capturar && (simbolo_turno == 'O'))
+                    partida.pecas_X--;
 
-                    if (pode_capturar)
-                    {
-                        tabuleiro[destino.lin][destino.col] = ' ';
-                        tabuleiro[origem.lin][origem.col] = ' ';
-                        tabuleiro[sentido_captura][origem.col + 2 * partida.sentido] = simbolo_turno;
+                pecas_esgotaram = (partida.pecas_X == 0) || (partida.pecas_O == 0);
 
-                        partida._ACAO_ATUAL = 0;
-                        partida.estado = 2;
-                    }
-
-                    if (pode_capturar && (simbolo_turno == 'X'))
-                        partida.pecas_O--;
-                    else if (pode_capturar && (simbolo_turno == 'O'))
-                        partida.pecas_X--;
-
-                    pecas_esgotaram = (partida.pecas_X == 0) || (partida.pecas_O == 0);
-
-                    if (pecas_esgotaram)
-                        partida.acabou = TRUE;
-                }
+                if (pecas_esgotaram)
+                    partida.acabou = TRUE;
             }
             else
             {
