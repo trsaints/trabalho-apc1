@@ -148,7 +148,7 @@ int main()
             int indice_invalido = (posicao_inserida.lin < 0) ||
                                   (posicao_inserida.lin > 7) ||
                                   (posicao_inserida.col < 0) ||
-                                  (posicao_inserida.lin > 7);
+                                  (posicao_inserida.col > 7);
 
             int esta_vazia = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == ' ');
 
@@ -187,21 +187,28 @@ int main()
             indice_invalido = (posicao_inserida.lin < 0) ||
                               (posicao_inserida.lin > 7) ||
                               (posicao_inserida.col < 0) ||
-                              (posicao_inserida.lin > 7);
+                              (posicao_inserida.col > 7);
 
             int pos_captura_invalida = (pos_captura.lin < 0) ||
-                                     (pos_captura.lin > 7) ||
-                                     (pos_captura.col < 0) ||
-                                     (pos_captura.lin > 7);
+                                       (pos_captura.lin > 7) ||
+                                       (pos_captura.col < 0) ||
+                                       (pos_captura.col > 7);
 
             esta_vazia = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == ' ');
 
             int tem_peca_igual = partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == turno_atual.jogador.simbolo;
 
-            int movimento_valido = FALSE;
+            int linha_e_perto = (posicao_inserida.lin == origem.lin+partida.sentido);
+            int coluna_e_perto = (posicao_inserida.lin == origem.lin+direcao); //isso ta errado, precisa arrumar...
+            int movimento_sem_captura = (indice_invalido = FALSE && esta_vazia && 
+                                        linha_e_perto && coluna_e_perto);
+            int movimento_com_captura = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == turno_atual.oponente.simbolo &&
+                                        pos_captura_invalida == FALSE);
+
+            int movimento_valido = (movimento_sem_captura || movimento_com_captura);
 
             
-            if (movimento_valido) {
+            if (movimento_valido = FALSE) {
                 printf("Movimento inválido. Pressione ENTER para escolher novamente\n");
                 getchar();
                 origem = (struct Posicao){0, 0};
@@ -214,12 +221,12 @@ int main()
             partida._ACAO_ATUAL = (TRUE || FALSE) ? JOGADOR : TURNO;
             partida.estado = REPRINT;
 
-            if (TRUE)
+            if (movimento_sem_captura)
             {
                 partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] = turno_atual.jogador.simbolo;
                 partida.tabuleiro[origem.lin][origem.col] = ' ';
             }
-            else if (FALSE)
+            else if (movimento_com_captura)
             {
                 int sentido_captura = (turno_atual.jogador.simbolo == 'X') ? (origem.lin - 2) : (origem.lin + 2);
 
@@ -238,7 +245,7 @@ int main()
                     jogador2.pecas--;
             }
             else
-            {
+            { //fallback, na duvida
                 printf("Nenhum movimento possível para a peça escolhida. Pressione "
                        "ENTER para escolher novamente\n");
                 getchar();
