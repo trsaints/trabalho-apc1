@@ -80,7 +80,6 @@ int main()
     char buffer_linha[256];
 
     int entrada_correta = 0;
-    int posicao_esta_vazia = FALSE;
 
     struct Posicao origem,
         destino;
@@ -109,9 +108,9 @@ int main()
                     for (int coluna = 0; coluna < 8; coluna++)
                     {
                         int pos = linha + coluna;
-                        posicao_esta_vazia = (pos % 2) == 0;
+                        int posicao_nao_jogavel = (pos % 2) == 0;
 
-                        if (posicao_esta_vazia)
+                        if (posicao_nao_jogavel)
                             printf(ANSI_BG_WHITE "%c " ANSI_COLOR_RESET, partida.tabuleiro[linha][coluna]);
                         else
                             printf(ANSI_BG_BLACK "%c " ANSI_COLOR_RESET, partida.tabuleiro[linha][coluna]);
@@ -144,7 +143,7 @@ int main()
             origem.lin--;
             origem.col--;
 
-            posicao_esta_vazia = (partida.tabuleiro[origem.lin][origem.col] == ' ');
+            int posicao_esta_vazia = (partida.tabuleiro[origem.lin][origem.col] == ' ');
 
             if (posicao_esta_vazia)
             {
