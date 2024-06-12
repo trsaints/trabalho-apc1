@@ -7,6 +7,10 @@
 #define FALSE 0
 #define TRUE 1
 
+#define ANSI_BG_WHITE "\x1b[47m"
+#define ANSI_BG_BLACK "\x1b[40m"
+#define ANSI_COLOR_RESET "\x1b[0m"
+
 enum EstadoJogo
 {
     JOGADOR,
@@ -51,6 +55,7 @@ int main()
         tabuleiro[8][8];
 
     int entrada_correta = 0;
+    int posicao_esta_vazia = FALSE;
 
     struct Posicao origem,
         destino;
@@ -63,10 +68,10 @@ int main()
         {
             int pos = linha + coluna;
             tabuleiro[linha][coluna] =
-                ((pos % 2) == 0) ? ' ' : (linha < 3) ? 'O'
-                                     : (linha > 4)   ? 'X'
-                                                   /* else */
-                                                   : ' ';
+                ((pos % 2) == 0) ? ' '
+                : (linha < 3)    ? 'O'
+                : (linha > 4)    ? 'X'
+                                 : ' ';
         }
 
     while (partida.acabou == FALSE)
@@ -80,7 +85,15 @@ int main()
                 for (int linha = 0; linha < 8; linha++)
                 {
                     for (int coluna = 0; coluna < 8; coluna++)
-                        printf(" %c", tabuleiro[linha][coluna]);
+                    {
+                        int pos = linha + coluna;
+                        posicao_esta_vazia = (pos % 2) == 0;
+
+                        if (posicao_esta_vazia)
+                            printf(ANSI_BG_WHITE "%c " ANSI_COLOR_RESET, tabuleiro[linha][coluna]);
+                        else
+                            printf(ANSI_BG_BLACK "%c " ANSI_COLOR_RESET, tabuleiro[linha][coluna]);
+                    }
 
                     printf(" %d\n", (linha + 1));
                 }
@@ -95,7 +108,7 @@ int main()
 
         while (partida.estado == TURNO)
         {
-            int pecas_esgotaram = 0;
+            int pecas_esgotaram = FALSE;
             partida.sentido = (simbolo_turno == 'X') ? -1 : 1;
 
             do
@@ -108,16 +121,18 @@ int main()
             origem.lin--;
             origem.col--;
 
-            int peca_nao_existe = (tabuleiro[origem.lin][origem.col] != simbolo_turno);
+            posicao_esta_vazia = (tabuleiro[origem.lin][origem.col] == ' ');
 
-            if (peca_nao_existe)
+            if (posicao_esta_vazia)
             {
                 printf("Nenhuma peça %c encontrada. Precione ENTER para escolher novamente\n", simbolo_turno);
                 while (getchar() != '\n')
                     ;
+
                 origem = (struct Posicao){0, 0};
                 destino = (struct Posicao){0, 0};
                 partida.estado = REPRINT;
+
                 continue;
             }
 
@@ -133,9 +148,12 @@ int main()
             destino.col--;
 
             int movimento_valido = destino.lin == (origem.lin + (partida.sentido)),
-                pode_ir_para_diagonal = movimento_valido && (destino.col == origem.col + 1) || (destino.col == origem.col - 1),
-                peca_colide = pode_ir_para_diagonal && (tabuleiro[destino.lin][destino.col] == simbolo_oponente),
-                peca_nao_colide = pode_ir_para_diagonal && (tabuleiro[destino.lin][destino.col] == ' ');
+                pode_ir_para_diagonal = movimento_valido && (destino.col == origem.col + 1) ||
+                                        (destino.col == origem.col - 1),
+                peca_colide = pode_ir_para_diagonal &&
+                              (tabuleiro[destino.lin][destino.col] == simbolo_oponente),
+                peca_nao_colide = pode_ir_para_diagonal &&
+                                  (tabuleiro[destino.lin][destino.col] == ' ');
 
             partida._ACAO_ATUAL = (peca_colide || peca_nao_colide) ? JOGADOR : TURNO;
             partida.estado = REPRINT;
@@ -180,7 +198,6 @@ int main()
 
                 continue;
             }
-
         }
 
         while (partida.estado == JOGADOR)
@@ -188,7 +205,7 @@ int main()
             char tmp = simbolo_oponente;
             simbolo_oponente = simbolo_turno;
             simbolo_turno = tmp;
-            
+
             partida._REPRINT = TRUE;
             partida.estado = REPRINT;
             partida._ACAO_ATUAL = TURNO;
