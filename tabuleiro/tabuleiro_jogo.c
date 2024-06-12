@@ -104,11 +104,12 @@ int main()
 
             partida.estado = partida._ACAO_ATUAL;
             partida._REPRINT = TRUE;
+
+            partida.acabou = (partida.pecas_X == 0) || (partida.pecas_O == 0);
         }
 
         while (partida.estado == TURNO)
         {
-            int pecas_esgotaram = FALSE;
             partida.sentido = (simbolo_turno == 'X') ? -1 : 1;
 
             do
@@ -180,10 +181,6 @@ int main()
                     partida.pecas_O--;
                 else if (pode_capturar && (simbolo_turno == 'O'))
                     partida.pecas_X--;
-
-                pecas_esgotaram = (partida.pecas_X == 0) || (partida.pecas_O == 0);
-
-                partida.acabou = pecas_esgotaram ? TRUE : FALSE;
             }
             else
             {
