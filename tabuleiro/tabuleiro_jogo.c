@@ -131,21 +131,30 @@ int main()
 
         while (partida.estado == TURNO)
         {
+            struct Posicao posicao_inserida;
+
             partida.sentido = (turno_atual.jogador.simbolo == 'X') ? -1 : 1;
 
             do
             {
                 printf("%s, qual peça deseja mover (linha coluna)? ", turno_atual.jogador.nome);
                 fgets(buffer_linha, sizeof(buffer_linha), stdin);
-                entrada_correta = sscanf(buffer_linha, "%d %d", &origem.lin, &origem.col);
+                entrada_correta = sscanf(buffer_linha, "%d %d", &posicao_inserida.lin, &posicao_inserida.col);
             } while (entrada_correta < 2);
 
-            origem.lin--;
-            origem.col--;
+            posicao_inserida.lin--;
+            posicao_inserida.col--;
 
-            int posicao_esta_vazia = (partida.tabuleiro[origem.lin][origem.col] == ' ');
+            int indice_invalido = (posicao_inserida.lin < 0) ||
+                                  (posicao_inserida.lin > 7) ||
+                                  (posicao_inserida.col < 0) ||
+                                  (posicao_inserida.lin > 7);
 
-            if (posicao_esta_vazia)
+            int posicao_esta_vazia = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == ' ');
+
+            int tem_oponente = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == turno_atual.oponente.simbolo);
+
+            if (indice_invalido || posicao_esta_vazia || tem_oponente)
             {
                 printf("Nenhuma peça %c encontrada. Precione ENTER para escolher novamente\n", turno_atual.jogador.simbolo);
                 while (getchar() != '\n')
@@ -157,6 +166,8 @@ int main()
 
                 continue;
             }
+
+            origem =  posicao_inserida;
 
             do
             {
