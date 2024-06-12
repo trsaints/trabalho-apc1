@@ -82,7 +82,7 @@ int main()
     int entrada_correta = 0;
 
     struct Posicao origem,
-        destino;
+        posicao_inserida;
 
     for (int linha = 0; linha < 8; linha++)
         for (int coluna = 0; coluna < 8; coluna++)
@@ -150,53 +150,76 @@ int main()
                                   (posicao_inserida.col < 0) ||
                                   (posicao_inserida.lin > 7);
 
-            int posicao_esta_vazia = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == ' ');
+            int esta_vazia = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == ' ');
 
             int tem_oponente = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == turno_atual.oponente.simbolo);
 
-            if (indice_invalido || posicao_esta_vazia || tem_oponente)
+            if (indice_invalido || esta_vazia || tem_oponente)
             {
                 printf("Nenhuma peça %c encontrada. Precione ENTER para escolher novamente\n", turno_atual.jogador.simbolo);
                 while (getchar() != '\n')
                     ;
 
                 origem = (struct Posicao){0, 0};
-                destino = (struct Posicao){0, 0};
+                posicao_inserida = (struct Posicao){0, 0};
                 partida.estado = REPRINT;
 
                 continue;
             }
 
-            origem =  posicao_inserida;
+            origem = posicao_inserida;
 
             do
             {
                 printf("%s, para onde deseja mover a peça (linha coluna)? ",
                        turno_atual.jogador.nome);
                 fgets(buffer_linha, sizeof(buffer_linha), stdin);
-                entrada_correta = sscanf(buffer_linha, "%i %i", &destino.lin, &destino.col);
+                entrada_correta = sscanf(buffer_linha, "%i %i", &posicao_inserida.lin, &posicao_inserida.col);
             } while (entrada_correta < 2);
 
-            destino.lin--;
-            destino.col--;
+            posicao_inserida.lin--;
+            posicao_inserida.col--;
 
-            int movimento_valido = destino.lin == (origem.lin + (partida.sentido)),
-                pode_ir_para_diagonal = movimento_valido && (destino.col == origem.col + 1) ||
-                                        (destino.col == origem.col - 1),
-                peca_colide = pode_ir_para_diagonal &&
-                              (partida.tabuleiro[destino.lin][destino.col] == turno_atual.oponente.simbolo),
-                peca_nao_colide = pode_ir_para_diagonal &&
-                                  (partida.tabuleiro[destino.lin][destino.col] == ' ');
+            int direcao = (posicao_inserida.col > origem.col) ? 1 : -1;
+            struct Posicao pos_captura = {.lin = origem.lin + (2 * partida.sentido),
+                                          .col = origem.col + (2 * direcao)};
 
-            partida._ACAO_ATUAL = (peca_colide || peca_nao_colide) ? JOGADOR : TURNO;
+            indice_invalido = (posicao_inserida.lin < 0) ||
+                              (posicao_inserida.lin > 7) ||
+                              (posicao_inserida.col < 0) ||
+                              (posicao_inserida.lin > 7);
+
+            int pos_captura_invalida = (pos_captura.lin < 0) ||
+                                     (pos_captura.lin > 7) ||
+                                     (pos_captura.col < 0) ||
+                                     (pos_captura.lin > 7);
+
+            esta_vazia = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == ' ');
+
+            int tem_peca_igual = partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == turno_atual.jogador.simbolo;
+
+            int movimento_valido = FALSE;
+
+            
+            if (movimento_valido) {
+                printf("Movimento inválido. Pressione ENTER para escolher novamente\n");
+                getchar();
+                origem = (struct Posicao){0, 0};
+                posicao_inserida = (struct Posicao){0, 0};
+                partida.estado = REPRINT;
+
+                continue;
+            }
+
+            partida._ACAO_ATUAL = (TRUE || FALSE) ? JOGADOR : TURNO;
             partida.estado = REPRINT;
 
-            if (peca_nao_colide)
+            if (TRUE)
             {
-                partida.tabuleiro[destino.lin][destino.col] = turno_atual.jogador.simbolo;
+                partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] = turno_atual.jogador.simbolo;
                 partida.tabuleiro[origem.lin][origem.col] = ' ';
             }
-            else if (peca_colide)
+            else if (FALSE)
             {
                 int sentido_captura = (turno_atual.jogador.simbolo == 'X') ? (origem.lin - 2) : (origem.lin + 2);
 
@@ -204,7 +227,7 @@ int main()
 
                 if (pode_capturar)
                 {
-                    partida.tabuleiro[destino.lin][destino.col] = ' ';
+                    partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] = ' ';
                     partida.tabuleiro[origem.lin][origem.col] = ' ';
                     partida.tabuleiro[sentido_captura][origem.col + 2 * partida.sentido] = turno_atual.jogador.simbolo;
                 }
@@ -220,7 +243,7 @@ int main()
                        "ENTER para escolher novamente\n");
                 getchar();
                 origem = (struct Posicao){0, 0};
-                destino = (struct Posicao){0, 0};
+                posicao_inserida = (struct Posicao){0, 0};
 
                 partida._REPRINT = TRUE;
                 partida._ACAO_ATUAL = TURNO;
