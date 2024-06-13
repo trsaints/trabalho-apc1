@@ -55,6 +55,31 @@ int main()
     SetConsoleOutputCP(CP_UTF8); // Resolve problema de acentuação no windows
 #endif
 
+    int opcao_escolhida;
+    do
+    {
+        system("clear");
+
+        printf("Menu:\n");
+        printf("1. Iniciar jogo\n");
+        printf("2. Sair\n");
+        printf("Selecione uma opção (somente números): ");
+        scanf("%d", &opcao_escolhida);
+
+        switch (opcao_escolhida)
+        {
+        case 1:
+            break;
+        case 2:
+            printf("Saindo...\n");
+
+            return 0;
+        default:
+            printf("Escolha inválida choice. Tente novamente.\n");
+            break;
+        }
+    } while ((opcao_escolhida != 2) && (opcao_escolhida != 1));
+
     struct Jogo partida = {
         ._REPRINT = TRUE,
         .estado = REPRINT,
