@@ -38,7 +38,7 @@ struct Jogo
 
 struct Jogador
 {
-    char *nome;
+    char nome[12];
     char simbolo;
     int pecas;
 };
@@ -72,17 +72,33 @@ int main()
         .simbolo = 'O',
         .pecas = 11};
 
-    struct Turno turno_atual = {
-        .jogador = jogador1,
-        .oponente = jogador2,
-    };
-
     char buffer_linha[256];
 
     int entrada_correta = 0;
 
     struct Posicao origem,
         destino;
+
+    do
+    {
+        printf("Jogador 1, qual é seu nome? ");
+        fgets(buffer_linha, sizeof(buffer_linha), stdin);
+
+        entrada_correta = sscanf(buffer_linha, "%s", &jogador1.nome);
+    } while (entrada_correta < 1 || entrada_correta > 12);
+
+    do
+    {
+        printf("Jogador 2, qual é seu nome? ");
+        fgets(buffer_linha, sizeof(buffer_linha), stdin);
+
+        entrada_correta = sscanf(buffer_linha, "%s", &jogador2.nome);
+    } while (entrada_correta < 1 || entrada_correta > 12);
+
+    struct Turno turno_atual = {
+        .jogador = jogador1,
+        .oponente = jogador2,
+    };
 
     for (int linha = 0; linha < 8; linha++)
         for (int coluna = 0; coluna < 8; coluna++)
