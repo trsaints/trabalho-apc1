@@ -187,7 +187,7 @@ int main()
             indice_invalido = (posicao_inserida.lin < 0) ||
                               (posicao_inserida.lin > 7) ||
                               (posicao_inserida.col < 0) ||
-                              (posicao_inserida.col < 7);
+                              (posicao_inserida.col > 7);
 
             int captura_invalida = (pos_captura.lin < 0) ||
                                      (pos_captura.lin > 7) ||
@@ -198,8 +198,10 @@ int main()
 
             tem_oponente = partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == turno_atual.oponente.simbolo;
 
+            //int nome = (origem.lin > posicao_inserida.lin)
+
             int move_e_captura = tem_oponente && !captura_invalida,
-                move_e_nao_captura = esta_vazia || !indice_invalido;
+                move_e_nao_captura = esta_vazia && !indice_invalido;
 
             int movimento_valido = move_e_nao_captura || move_e_captura;
 
@@ -231,7 +233,7 @@ int main()
 
                 if (pode_capturar)
                 {
-                    partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] = ' ';
+                    partida.tabuleiro[destino.lin][destino.col] = ' ';
                     partida.tabuleiro[origem.lin][origem.col] = ' ';
                     partida.tabuleiro[sentido_captura][origem.col + 2 * partida.sentido] = turno_atual.jogador.simbolo;
                 }
