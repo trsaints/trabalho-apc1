@@ -7,6 +7,10 @@
 #define FALSE 0
 #define TRUE 1
 
+#define ANSI_BG_WHITE "\x1b[47m"
+#define ANSI_BG_BLACK "\x1b[40m"
+#define ANSI_COLOR_RESET "\x1b[0m"
+
 enum EstadoJogo
 {
     JOGADOR,
@@ -20,16 +24,29 @@ struct Posicao
     int col;
 };
 
-struct jogo
+struct Jogo
 {
     unsigned int _REPRINT,
         estado,
         _ACAO_ATUAL,
-        acabou,
-        pecas_X,
-        pecas_O;
+        acabou;
 
     int sentido;
+
+    char tabuleiro[8][8];
+};
+
+struct Jogador
+{
+    char nome[12];
+    char simbolo;
+    int pecas;
+};
+
+typedef struct Turno
+{
+    struct Jogador jogador,
+        oponente;
 };
 
 int main()
@@ -38,35 +55,85 @@ int main()
     SetConsoleOutputCP(CP_UTF8); // Resolve problema de acentuação no windows
 #endif
 
-    struct jogo partida = {
+    int opcao_escolhida;
+    do
+    {
+        system("clear");
+
+        printf("Menu:\n");
+        printf("1. Iniciar jogo\n");
+        printf("2. Sair\n");
+        printf("Selecione uma opção (somente números): ");
+        scanf("%d", &opcao_escolhida);
+
+        switch (opcao_escolhida)
+        {
+        case 1:
+            break;
+        case 2:
+            printf("Saindo...\n");
+
+            return 0;
+        default:
+            printf("Escolha inválida choice. Tente novamente.\n");
+            break;
+        }
+    } while ((opcao_escolhida != 2) && (opcao_escolhida != 1));
+
+    struct Jogo partida = {
         ._REPRINT = TRUE,
         .estado = REPRINT,
         ._ACAO_ATUAL = 1,
         .acabou = FALSE,
-        .pecas_X = 11,
-        .pecas_O = 1,
         .sentido = 0};
 
-    char buffer_linha[256],
-        tabuleiro[8][8];
+    struct Jogador jogador1 = {
+        .nome = "Jogador 1",
+        .simbolo = 'X',
+        .pecas = 11};
+
+    struct Jogador jogador2 = {
+        .nome = "Jogador 2",
+        .simbolo = 'O',
+        .pecas = 11};
+
+    char buffer_linha[256];
 
     int entrada_correta = 0;
 
     struct Posicao origem,
         destino;
 
-    char simbolo_turno = 'X',
-         simbolo_oponente = 'O';
+    do
+    {
+        printf("Jogador 1, qual é seu nome? ");
+        fgets(buffer_linha, sizeof(buffer_linha), stdin);
+
+        entrada_correta = sscanf(buffer_linha, "%s", &jogador1.nome);
+    } while (entrada_correta < 1 || entrada_correta > 12);
+
+    do
+    {
+        printf("Jogador 2, qual é seu nome? ");
+        fgets(buffer_linha, sizeof(buffer_linha), stdin);
+
+        entrada_correta = sscanf(buffer_linha, "%s", &jogador2.nome);
+    } while (entrada_correta < 1 || entrada_correta > 12);
+
+    struct Turno turno_atual = {
+        .jogador = jogador1,
+        .oponente = jogador2,
+    };
 
     for (int linha = 0; linha < 8; linha++)
         for (int coluna = 0; coluna < 8; coluna++)
         {
             int pos = linha + coluna;
-            tabuleiro[linha][coluna] =
-                ((pos % 2) == 0) ? ' ' : (linha < 3) ? 'O'
-                                     : (linha > 4)   ? 'X'
-                                                   /* else */
-                                                   : ' ';
+            partida.tabuleiro[linha][coluna] =
+                ((pos % 2) == 0) ? ' '
+                : (linha < 3)    ? 'O'
+                : (linha > 4)    ? 'X'
+                                 : ' ';
         }
 
     while (partida.acabou == FALSE)
@@ -80,7 +147,15 @@ int main()
                 for (int linha = 0; linha < 8; linha++)
                 {
                     for (int coluna = 0; coluna < 8; coluna++)
-                        printf(" %c", tabuleiro[linha][coluna]);
+                    {
+                        int pos = linha + coluna;
+                        int posicao_nao_jogavel = (pos % 2) == 0;
+
+                        if (posicao_nao_jogavel)
+                            printf(ANSI_BG_WHITE "%c " ANSI_COLOR_RESET, partida.tabuleiro[linha][coluna]);
+                        else
+                            printf(ANSI_BG_BLACK "%c " ANSI_COLOR_RESET, partida.tabuleiro[linha][coluna]);
+                    }
 
                     printf(" %d\n", (linha + 1));
                 }
@@ -91,81 +166,116 @@ int main()
 
             partida.estado = partida._ACAO_ATUAL;
             partida._REPRINT = TRUE;
+
+            partida.acabou = (jogador1.pecas == 0) || (jogador2.pecas == 0);
         }
 
         while (partida.estado == TURNO)
         {
-            int pecas_esgotaram = 0;
-            partida.sentido = (simbolo_turno == 'X') ? -1 : 1;
+            struct Posicao posicao_inserida;
+
+            partida.sentido = (turno_atual.jogador.simbolo == 'X') ? -1 : 1;
 
             do
             {
-                printf("%c, escolha a peça que deseja mover (linha coluna): ", simbolo_turno);
+                printf("%s, qual peça deseja mover (linha coluna)? ", turno_atual.jogador.nome);
                 fgets(buffer_linha, sizeof(buffer_linha), stdin);
-                entrada_correta = sscanf(buffer_linha, "%d %d", &origem.lin, &origem.col);
+                entrada_correta = sscanf(buffer_linha, "%d %d", &posicao_inserida.lin, &posicao_inserida.col);
             } while (entrada_correta < 2);
 
-            origem.lin--;
-            origem.col--;
+            posicao_inserida.lin--;
+            posicao_inserida.col--;
 
-            int peca_nao_existe = (tabuleiro[origem.lin][origem.col] != simbolo_turno);
+            int fora_do_alcance = (posicao_inserida.lin < 0) ||
+                                  (posicao_inserida.lin > 7) ||
+                                  (posicao_inserida.col < 0) ||
+                                  (posicao_inserida.col > 7);
 
-            if (peca_nao_existe)
+            int destino_vazio = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == ' ');
+            int tem_oponente = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == turno_atual.oponente.simbolo);
+
+            if (fora_do_alcance || destino_vazio || tem_oponente)
             {
-                printf("Nenhuma peça %c encontrada. Precione ENTER para escolher novamente\n", simbolo_turno);
+                printf("Nenhuma peça %c encontrada. Precione ENTER para escolher novamente\n", turno_atual.jogador.simbolo);
                 while (getchar() != '\n')
                     ;
+
                 origem = (struct Posicao){0, 0};
-                destino = (struct Posicao){0, 0};
+                posicao_inserida = (struct Posicao){0, 0};
                 partida.estado = REPRINT;
+
                 continue;
             }
 
+            origem = posicao_inserida;
+
             do
             {
-                printf("%c, escolha a posição para onde deseja mover a peça (linha coluna): ",
-                       simbolo_turno);
+                printf("%s, para onde deseja mover a peça (linha coluna)? ",
+                       turno_atual.jogador.nome);
                 fgets(buffer_linha, sizeof(buffer_linha), stdin);
-                entrada_correta = sscanf(buffer_linha, "%i %i", &destino.lin, &destino.col);
+                entrada_correta = sscanf(buffer_linha, "%i %i", &posicao_inserida.lin, &posicao_inserida.col);
             } while (entrada_correta < 2);
 
-            destino.lin--;
-            destino.col--;
+            posicao_inserida.lin--;
+            posicao_inserida.col--;
 
-            int movimento_valido = destino.lin == (origem.lin + (partida.sentido)),
-                pode_ir_para_diagonal = movimento_valido && (destino.col == origem.col + 1) || (destino.col == origem.col - 1),
-                peca_colide = pode_ir_para_diagonal && (tabuleiro[destino.lin][destino.col] == simbolo_oponente),
-                peca_nao_colide = pode_ir_para_diagonal && (tabuleiro[destino.lin][destino.col] == ' ');
+            int direcao = (posicao_inserida.col > origem.col) ? 1 : -1;
+            struct Posicao pos_captura = {.lin = origem.lin + (2 * partida.sentido),
+                                          .col = origem.col + (2 * direcao)};
 
-            partida._ACAO_ATUAL = (peca_colide || peca_nao_colide) ? JOGADOR : TURNO;
-            partida.estado = REPRINT;
+            fora_do_alcance = (posicao_inserida.lin < 0) ||
+                              (posicao_inserida.lin > 7) ||
+                              (posicao_inserida.col < 0) ||
+                              (posicao_inserida.col > 7);
 
-            if (peca_nao_colide)
+            int captura_invalida = (pos_captura.lin < 0) ||
+                                   (pos_captura.lin > 7) ||
+                                   (pos_captura.col < 0) ||
+                                   (pos_captura.col > 7);
+
+            destino_vazio = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == ' ');
+            tem_oponente = partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == turno_atual.oponente.simbolo;
+
+            int sentido_correto = turno_atual.jogador.simbolo == 'X'
+                                      ? (posicao_inserida.lin < origem.lin)
+                                      : (posicao_inserida.lin > origem.lin);
+
+            int captura_vazia = partida.tabuleiro[pos_captura.lin][pos_captura.col] == ' ';
+
+            int move_e_captura = tem_oponente && captura_vazia && !captura_invalida,
+                move_e_nao_captura = destino_vazio && !fora_do_alcance;
+
+            int movimento_valido = (move_e_nao_captura || move_e_captura) && sentido_correto;
+
+            if (!movimento_valido)
             {
-                tabuleiro[destino.lin][destino.col] = simbolo_turno;
-                tabuleiro[origem.lin][origem.col] = ' ';
+                printf("Movimento inválido. Pressione ENTER para escolher novamente\n");
+                getchar();
+                origem = (struct Posicao){0, 0};
+                posicao_inserida = (struct Posicao){0, 0};
+                partida.estado = REPRINT;
+
+                continue;
             }
-            else if (peca_colide)
+
+            destino = posicao_inserida;
+            partida.estado = JOGADOR;
+
+            if (move_e_nao_captura)
             {
-                int sentido_captura = (simbolo_turno == 'X') ? (origem.lin - 2) : (origem.lin + 2);
+                partida.tabuleiro[destino.lin][destino.col] = turno_atual.jogador.simbolo;
+                partida.tabuleiro[origem.lin][origem.col] = ' ';
+            }
+            else if (move_e_captura)
+            {
+                int sentido_captura = (turno_atual.jogador.simbolo == 'X') ? (origem.lin - 2) : (origem.lin + 2);
 
-                int pode_capturar = (partida.sentido != 0) && (tabuleiro[sentido_captura][origem.col + 2 * partida.sentido] == ' ');
+                partida.tabuleiro[destino.lin][destino.col] = ' ';
+                partida.tabuleiro[origem.lin][origem.col] = ' ';
+                partida.tabuleiro[pos_captura.lin][pos_captura.col] = turno_atual.jogador.simbolo;
 
-                if (pode_capturar)
-                {
-                    tabuleiro[destino.lin][destino.col] = ' ';
-                    tabuleiro[origem.lin][origem.col] = ' ';
-                    tabuleiro[sentido_captura][origem.col + 2 * partida.sentido] = simbolo_turno;
-                }
-
-                if (pode_capturar && (simbolo_turno == 'X'))
-                    partida.pecas_O--;
-                else if (pode_capturar && (simbolo_turno == 'O'))
-                    partida.pecas_X--;
-
-                pecas_esgotaram = (partida.pecas_X == 0) || (partida.pecas_O == 0);
-
-                partida.acabou = pecas_esgotaram ? TRUE : FALSE;
+                turno_atual.oponente.pecas--;
             }
             else
             {
@@ -173,22 +283,22 @@ int main()
                        "ENTER para escolher novamente\n");
                 getchar();
                 origem = (struct Posicao){0, 0};
-                destino = (struct Posicao){0, 0};
+                posicao_inserida = (struct Posicao){0, 0};
 
                 partida._REPRINT = TRUE;
+                partida.estado = REPRINT;
                 partida._ACAO_ATUAL = TURNO;
 
                 continue;
             }
-
         }
 
         while (partida.estado == JOGADOR)
         {
-            char tmp = simbolo_oponente;
-            simbolo_oponente = simbolo_turno;
-            simbolo_turno = tmp;
-            
+            struct Jogador tmp = turno_atual.oponente;
+            turno_atual.oponente = turno_atual.jogador;
+            turno_atual.jogador = tmp;
+
             partida._REPRINT = TRUE;
             partida.estado = REPRINT;
             partida._ACAO_ATUAL = TURNO;
