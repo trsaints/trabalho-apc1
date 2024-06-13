@@ -145,16 +145,15 @@ int main()
             posicao_inserida.lin--;
             posicao_inserida.col--;
 
-            int indice_invalido = (posicao_inserida.lin < 0) ||
+            int fora_do_alcance = (posicao_inserida.lin < 0) ||
                                   (posicao_inserida.lin > 7) ||
                                   (posicao_inserida.col < 0) ||
                                   (posicao_inserida.col > 7);
 
-            int esta_vazia = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == ' ');
-
+            int destino_vazio = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == ' ');
             int tem_oponente = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == turno_atual.oponente.simbolo);
 
-            if (indice_invalido || esta_vazia || tem_oponente)
+            if (fora_do_alcance || destino_vazio || tem_oponente)
             {
                 printf("Nenhuma peça %c encontrada. Precione ENTER para escolher novamente\n", turno_atual.jogador.simbolo);
                 while (getchar() != '\n')
@@ -184,26 +183,29 @@ int main()
             struct Posicao pos_captura = {.lin = origem.lin + (2 * partida.sentido),
                                           .col = origem.col + (2 * direcao)};
 
-            indice_invalido = (posicao_inserida.lin < 0) ||
+            fora_do_alcance = (posicao_inserida.lin < 0) ||
                               (posicao_inserida.lin > 7) ||
                               (posicao_inserida.col < 0) ||
                               (posicao_inserida.col > 7);
 
             int captura_invalida = (pos_captura.lin < 0) ||
-                                     (pos_captura.lin > 7) ||
-                                     (pos_captura.col < 0) ||
-                                     (pos_captura.col > 7);
+                                   (pos_captura.lin > 7) ||
+                                   (pos_captura.col < 0) ||
+                                   (pos_captura.col > 7);
 
-            esta_vazia = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == ' ');
-
+            destino_vazio = (partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == ' ');
             tem_oponente = partida.tabuleiro[posicao_inserida.lin][posicao_inserida.col] == turno_atual.oponente.simbolo;
 
-            //int nome = (origem.lin > posicao_inserida.lin)
+            int sentido_correto = turno_atual.jogador.simbolo == 'X'
+                                      ? (posicao_inserida.lin < origem.lin)
+                                      : (posicao_inserida.lin > origem.lin);
 
-            int move_e_captura = tem_oponente && !captura_invalida,
-                move_e_nao_captura = esta_vazia && !indice_invalido;
+            int captura_vazia = partida.tabuleiro[pos_captura.lin][pos_captura.col] == ' ';
 
-            int movimento_valido = move_e_nao_captura || move_e_captura;
+            int move_e_captura = tem_oponente && captura_vazia && !captura_invalida,
+                move_e_nao_captura = destino_vazio && !fora_do_alcance;
+
+            int movimento_valido = (move_e_nao_captura || move_e_captura) && sentido_correto;
 
             if (!movimento_valido)
             {
@@ -217,7 +219,6 @@ int main()
             }
 
             destino = posicao_inserida;
-
             partida.estado = JOGADOR;
 
             if (move_e_nao_captura)
@@ -229,14 +230,9 @@ int main()
             {
                 int sentido_captura = (turno_atual.jogador.simbolo == 'X') ? (origem.lin - 2) : (origem.lin + 2);
 
-                int pode_capturar = (partida.sentido != 0) && (partida.tabuleiro[sentido_captura][origem.col + 2 * partida.sentido] == ' ');
-
-                if (pode_capturar)
-                {
-                    partida.tabuleiro[destino.lin][destino.col] = ' ';
-                    partida.tabuleiro[origem.lin][origem.col] = ' ';
-                    partida.tabuleiro[sentido_captura][origem.col + 2 * partida.sentido] = turno_atual.jogador.simbolo;
-                }
+                partida.tabuleiro[destino.lin][destino.col] = ' ';
+                partida.tabuleiro[origem.lin][origem.col] = ' ';
+                partida.tabuleiro[pos_captura.lin][pos_captura.col] = turno_atual.jogador.simbolo;
 
                 turno_atual.oponente.pecas--;
             }
@@ -249,6 +245,7 @@ int main()
                 posicao_inserida = (struct Posicao){0, 0};
 
                 partida._REPRINT = TRUE;
+                partida.estado = REPRINT;
                 partida._ACAO_ATUAL = TURNO;
 
                 continue;
